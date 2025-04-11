@@ -1,0 +1,66 @@
+﻿@model List<AttendanceRecord>
+@{
+    ViewData["Title"] = "Учет работы";
+    var fullName = Context.Session.GetString("FullName");
+    var role = Context.Session.GetString("Role");
+}
+
+<h2>Учет работы - @fullName (@role)</h2>
+
+<div class="row">
+    @for (int group = 1; group <= 10; group++)
+    {
+        var record = Model.FirstOrDefault(r => r.GroupNumber == group);
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    Группа @group
+                </div>
+                <div class="card-body">
+                    <form method="post" action="@Url.Action("MarkAttendance", "Work")">
+                        <input type="hidden" name="groupNumber" value="@group" />
+
+                        <div class="form-group">
+                            <label>Замещает (ФИО):</label>
+                            <input type="text" name="replacedPerson" class="form-control"
+                                   value="@(record?.ReplacedPerson ?? "")" />
+                        </div>
+                        <div class="form-group">
+                            <label>Группа замещаемого:</label>
+                            <input type="text" name="replacedPersonGroup" class="form-control"
+                                   value="@(record?.ReplacedPersonGroup ?? "")" />
+                        </div>
+
+                        <div class="form-group">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <label class="btn @(record?.IsPresent == true ? "btn-success active" : "btn-outline-success")">
+                                    <input type="radio" name="isPresent" value="true"
+                                    @(record?.IsPresent == true ? "checked" : "") /> На работе
+                                </label>
+                                <label class="btn @(record?.IsPresent == false ? "btn-danger active" : "btn-outline-danger")">
+                                    <input type="radio" name="isPresent" value="false"
+                                    @(record?.IsPresent == false ? "checked" : "") /> Не на работе
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </form>
+                </div>
+                <div class="card-footer">
+                    <div style="width: 20px; height: 20px; border-radius: 50%;
+                                background-color: @(record?.IsPresent == true ? "green" : "red");
+                                display: inline-block;"></div>
+                    Статус: @(record?.IsPresent == true ? "На работе" : "Не на работе")
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (role == "Зам")
+{
+    <div class="mt-3">
+        <a href="@Url.Action("Report", "Work")" class="btn btn-info">Просмотреть отчет</a>
+    </div>
+}
